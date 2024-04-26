@@ -20,3 +20,6 @@ class Query(models.Model):
     server_response = models.BooleanField(
         verbose_name='ответ сервера',
         null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'запрос'
