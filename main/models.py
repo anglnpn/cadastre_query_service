@@ -9,6 +9,7 @@ class Query(models.Model):
     """
     number = models.CharField(
         max_length=50,
+        unique=True,
         verbose_name='кадастровый номер')
     latitude = models.FloatField(
         verbose_name='широта')
