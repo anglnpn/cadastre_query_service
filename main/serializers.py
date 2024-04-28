@@ -7,3 +7,4 @@ class QuerySerializer(serializers.ModelSerializer):
     class Meta:
         model = Query
         fields = '__all__'
+
