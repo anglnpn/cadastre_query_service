@@ -123,3 +123,19 @@ class QueryNumberListAPIView(generics.ListAPIView):
             return Response(
                 'По данному кадастровому номеру запросы не найдены',
                 status=status.HTTP_200_OK)
+
+
+class PingAPIView(APIView):
+    """
+    Проверка доступности сервера.
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        Метод проверяет доступность сервера.
+        Возвращает сообщение о доступности.
+        """
+
+        return Response(
+            {"message": "Сервер доступен"},
+            status=status.HTTP_200_OK)

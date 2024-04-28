@@ -4,7 +4,8 @@ from main.apps import MainConfig
 from main.views import (QueryCreateAPIView,
                         QueryListAPIView,
                         QueryNumberListAPIView,
-                        QueryResultAPIView)
+                        QueryResultAPIView,
+                        PingAPIView)
 
 app_name = MainConfig.name
 
@@ -13,5 +14,6 @@ urlpatterns = [
     path('history/', QueryListAPIView.as_view(), name='history'),
     path('history_number/', QueryNumberListAPIView.as_view(), name='history_number'),
     path('result/', QueryResultAPIView.as_view(), name='history_result'),
+    path('ping/', PingAPIView.as_view(), name='ping'),
 ]
 
