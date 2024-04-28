@@ -114,11 +114,15 @@ class QueryNumberListAPIView(generics.ListAPIView):
         Возвращает отфильтрованные объекты
         Query по данному номеру.
         """
-        numbers = request.data.get('number')
-        querys = Query.objects.filter(number=numbers)
+        number = request.data.get('number')
+
+        # получаем все объекты по номеру
+        querys = Query.objects.filter(number=number).all()
+        # сериализуем объекты
+        serializer = self.serializer_class(querys, many=True)
 
         if querys:
-            return Response(querys, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(
                 'По данному кадастровому номеру запросы не найдены',
