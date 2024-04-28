@@ -64,7 +64,7 @@ class QueryResultAPIView(APIView):
         Метод получает id запроса.
         Возвращает результат запроса.
         """
-        id_query = request.data.get('id')
+        id_query = request.query_params.get('id')
 
         try:
             query_obj = Query.objects.get(id=id_query)
@@ -75,21 +75,26 @@ class QueryResultAPIView(APIView):
 
                 if result is True:
                     return Response(
-                        {"message": "Статус запроса: выполнен"},
+                        {"message": "Статус запроса: успешно"},
                         status=status.HTTP_200_OK)
-
+                elif result is None:
+                    return Response(
+                        {"message": "Статус запроса: ожидает ответ сервера"},
+                        status=status.HTTP_200_OK)
                 else:
                     return Response(
-                        {"message": "Статус запроса: не выполнен"},
+                        {"message": "Статус запроса: неуспешно"},
                         status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response(
-                    {"message": "Запроса с данным id не существует"},
-                    status=status.HTTP_400_BAD_REQUEST)
+
         except ObjectDoesNotExist:
             return Response(
                 {"message": "Запроса с данным id не существует "
                             "или вы передали пустой запрос."},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        except ValueError:
+            return Response(
+                {"message": "Вы передали пустой запрос или некорректный id."},
                 status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -114,10 +119,11 @@ class QueryNumberListAPIView(generics.ListAPIView):
         Возвращает отфильтрованные объекты
         Query по данному номеру.
         """
-        number = request.data.get('number')
+        number = request.query_params.get('number')
 
         # получаем все объекты по номеру
         querys = Query.objects.filter(number=number).all()
+
         # сериализуем объекты
         serializer = self.serializer_class(querys, many=True)
 
@@ -125,7 +131,9 @@ class QueryNumberListAPIView(generics.ListAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(
-                'По данному кадастровому номеру запросы не найдены',
+                {"message":
+                     "По данному кадастровому "
+                     "номеру запросы не найдены"},
                 status=status.HTTP_200_OK)
 
 

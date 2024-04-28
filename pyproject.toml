@@ -17,6 +17,8 @@ django-celery-beat = "^2.6.0"
 django-filter = "^24.2"
 python-dotenv = "^1.0.1"
 flake8 = "^7.0.0"
+pytest = "^8.2.0"
+pytest-django = "^4.8.0"
 
 
 [build-system]
