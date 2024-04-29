@@ -1,7 +1,9 @@
 from rest_framework import serializers
 
 from main.models import Query
-from main.validators import CadastreNumberValidator, LatitudeValidator, LongitudeValidator
+from main.validators import (CadastreNumberValidator,
+                             LatitudeValidator,
+                             LongitudeValidator)
 
 
 class QuerySerializer(serializers.ModelSerializer):
@@ -13,4 +15,3 @@ class QuerySerializer(serializers.ModelSerializer):
             LatitudeValidator('latitude'),
             LongitudeValidator('longitude')
         ]
-

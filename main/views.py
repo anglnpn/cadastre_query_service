@@ -1,10 +1,13 @@
 from django.core.exceptions import ObjectDoesNotExist
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from main.models import Query
+from main.paginators import CustomPagination
 from main.serializers import QuerySerializer
 
 from main.tasks import simulating_server_response
@@ -17,7 +20,7 @@ class QueryCreateAPIView(generics.CreateAPIView):
     queryset = Query.objects.all()
     serializer_class = QuerySerializer
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs) -> Response:
         """
         Метод создает запрос по кадастровому
         номеру, ширине и долготе.
@@ -40,11 +43,11 @@ class QueryCreateAPIView(generics.CreateAPIView):
             simulating_server_response.delay(id_query)
 
             return Response(
-                {"message":
-                     f"Запрос по кадастровому номеру: "
-                     f"{number} отправлен. "
-                     f"id запроса: {id_query}. "
-                     f"Ожидайте ответ сервера."},
+                {
+                    "message": "Запрос по кадастровому номеру: "
+                               f"{number} отправлен. "
+                               f"id запроса: {id_query}. "
+                               "Ожидайте ответ сервера."},
                 status=status.HTTP_201_CREATED)
 
         else:
@@ -53,13 +56,27 @@ class QueryCreateAPIView(generics.CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
 
-class QueryResultAPIView(APIView):
+class QueryResultAPIView(generics.GenericAPIView):
     """
-    Получение результата запроса по id
+    Получение результата запроса
+    из поля 'server_response' объекта
+    Query по id.
     """
     queryset = Query.objects.all()
+    serializer_class = QuerySerializer
 
-    def get(self, request, *args, **kwargs):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                name='id',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description='id запроса',
+                required=True
+            )
+        ]
+    )
+    def get(self, request, *args, **kwargs) -> Response:
         """
         Метод получает id запроса.
         Возвращает результат запроса.
@@ -67,7 +84,7 @@ class QueryResultAPIView(APIView):
         id_query = request.query_params.get('id')
 
         try:
-            query_obj = Query.objects.get(id=id_query)
+            query_obj = self.queryset.get(id=id_query)
 
             if query_obj:
 
@@ -79,22 +96,34 @@ class QueryResultAPIView(APIView):
                         status=status.HTTP_200_OK)
                 elif result is None:
                     return Response(
-                        {"message": "Статус запроса: ожидает ответ сервера"},
+                        {
+                            "message": "Статус запроса: "
+                                       "ожидает ответ сервера"
+                        },
                         status=status.HTTP_200_OK)
                 else:
                     return Response(
-                        {"message": "Статус запроса: неуспешно"},
+                        {
+                            "message": "Статус запроса: "
+                                       "неуспешно"
+                        },
                         status=status.HTTP_400_BAD_REQUEST)
 
         except ObjectDoesNotExist:
             return Response(
-                {"message": "Запроса с данным id не существует "
-                            "или вы передали пустой запрос."},
+                {
+                    "message": "Запроса с данным "
+                               "id не существует "
+                               "или вы передали пустой запрос."
+                },
                 status=status.HTTP_400_BAD_REQUEST)
 
         except ValueError:
             return Response(
-                {"message": "Вы передали пустой запрос или некорректный id."},
+                {
+                    "message": "Вы передали пустой"
+                               " запрос или некорректный id."
+                },
                 status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -102,18 +131,31 @@ class QueryListAPIView(generics.ListAPIView):
     """
     Список всех запросов
     """
-    queryset = Query.objects.all()
+    queryset = Query.objects.all().order_by('id')
     serializer_class = QuerySerializer
+    pagination_class = CustomPagination
 
 
 class QueryNumberListAPIView(generics.ListAPIView):
     """
     Список запросов по кадастровому номеру
     """
-    queryset = Query.objects.all()
+    queryset = Query.objects.all().order_by('id')
     serializer_class = QuerySerializer
+    pagination_class = CustomPagination
 
-    def get(self, request, *args, **kwargs):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                name='number',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description='кадастровый номер запроса',
+                required=True
+            )
+        ]
+    )
+    def get(self, request, *args, **kwargs) -> Response:
         """
         Метод получает кадастровый номер.
         Возвращает отфильтрованные объекты
@@ -122,7 +164,7 @@ class QueryNumberListAPIView(generics.ListAPIView):
         number = request.query_params.get('number')
 
         # получаем все объекты по номеру
-        querys = Query.objects.filter(number=number).all()
+        querys = self.queryset.filter(number=number).all()
 
         # сериализуем объекты
         serializer = self.serializer_class(querys, many=True)
@@ -131,18 +173,22 @@ class QueryNumberListAPIView(generics.ListAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(
-                {"message":
-                     "По данному кадастровому "
-                     "номеру запросы не найдены"},
+                {
+                    "message": "По данному кадастровому "
+                               "номеру запросы не найдены"
+                },
                 status=status.HTTP_200_OK)
 
 
-class PingAPIView(APIView):
+class PingAPIView(generics.GenericAPIView):
     """
     Проверка доступности сервера.
     """
 
-    def get(self, request, *args, **kwargs):
+    @swagger_auto_schema(
+        responses={200: openapi.Response(description="Сервер доступен")},
+    )
+    def get(self, request, *args, **kwargs) -> Response:
         """
         Метод проверяет доступность сервера.
         Возвращает сообщение о доступности.

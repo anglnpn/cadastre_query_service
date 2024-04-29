@@ -16,4 +16,3 @@ urlpatterns = [
     path('result/', QueryResultAPIView.as_view(), name='history_result'),
     path('ping/', PingAPIView.as_view(), name='ping'),
 ]
-

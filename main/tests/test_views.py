@@ -46,11 +46,13 @@ def test_query_create(test_url_create):
     query_from_db = Query.objects.get(number=data['number'])
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json() == {"message":
-                                   f"Запрос по кадастровому номеру: "
-                                   f"{data['number']} отправлен. "
-                                   f"id запроса: {query_from_db.id}. "
-                                   f"Ожидайте ответ сервера."}
+    assert response.json() == {
+        "message":
+            "Запрос по кадастровому номеру: "
+            f"{data['number']} отправлен. "
+            f"id запроса: {query_from_db.id}. "
+            f"Ожидайте ответ сервера."
+    }
 
     assert data['number'] == query_from_db.number
     assert data['latitude'] == query_from_db.latitude
@@ -138,7 +140,8 @@ def test_bad_request_number_format(test_url_create):
                              'АА – кадастровый округ; '
                              'ВВ - кадастровый район; '
                              'CCCCCCС - кадастровый квартал в пределах '
-                             'данного кадастрового района  (состоит из 7 цифр); '
+                             'данного кадастрового района  '
+                             '(состоит из 7 цифр); '
                              'КК – уникальный номер объекта.']
     }
 
@@ -229,7 +232,7 @@ def test_query_list(test_url_list):
     response = client.get(url)
     print(response.data)
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.data) == 2
+    assert len(response.data['results']) == 2
 
 
 @pytest.mark.django_db
@@ -243,7 +246,7 @@ def test_query_list_empty(test_url_list):
     response = client.get(url)
 
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.data) == 0
+    assert len(response.data['results']) == 0
 
 
 @pytest.mark.django_db
