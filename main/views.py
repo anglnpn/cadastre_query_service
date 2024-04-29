@@ -3,7 +3,6 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from rest_framework import generics, status
-from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from main.models import Query
@@ -186,7 +185,9 @@ class PingAPIView(generics.GenericAPIView):
     """
 
     @swagger_auto_schema(
-        responses={200: openapi.Response(description="Сервер доступен")},
+        responses={
+            200: openapi.Response(description="Сервер доступен")
+        },
     )
     def get(self, request, *args, **kwargs) -> Response:
         """
