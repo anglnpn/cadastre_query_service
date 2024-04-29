@@ -38,5 +38,6 @@ urlpatterns = [
     path('main/', include('main.urls', namespace='query')),
     # документация API
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='redoc'),
 
 ]
