@@ -1,7 +1,7 @@
-import time
 import random
+import time
+
 from celery import shared_task
-from django.conf import settings
 
 from main.models import Query
 from main.utils import random_response
@@ -20,5 +20,9 @@ def simulating_server_response(id_query):
     time.sleep(random.randint(1, 60))
 
     query_obj = Query.objects.get(id=id_query)
+
+    # Записываем 'True'/'False' в
+    # поле'server_response' объекта 'Query'
     query_obj.server_response = random_response()
+
     query_obj.save()

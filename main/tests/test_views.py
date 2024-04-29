@@ -46,11 +46,12 @@ def test_query_create(test_url_create):
     query_from_db = Query.objects.get(number=data['number'])
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json() == {
-        'message': 'Запрос по кадастровому номеру: '
-                   '77:77:88888:999 отправлен. id запроса: 1. '
-                   'Ожидайте ответ сервера.'
-    }
+    assert response.json() == {"message":
+                                   f"Запрос по кадастровому номеру: "
+                                   f"{data['number']} отправлен. "
+                                   f"id запроса: {query_from_db.id}. "
+                                   f"Ожидайте ответ сервера."}
+
     assert data['number'] == query_from_db.number
     assert data['latitude'] == query_from_db.latitude
     assert data['longitude'] == query_from_db.longitude
